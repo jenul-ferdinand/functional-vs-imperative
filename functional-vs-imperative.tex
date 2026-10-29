@@ -101,14 +101,68 @@ languages it is now conducted in. We settle it.
   use but which kind of program to write.
 \end{remark}
 
+\section{The Ceasefire of 1937}\label{sec:power}
+
+The first question, whether one style can compute something the other
+cannot, was settled before either had a machine to run on. Church
+proposed that the effectively calculable functions are those definable
+in the $\lambda$-calculus~\cite{church}. Turing proposed those computable
+by a machine that reads and writes symbols on a tape, following a table
+of instructions~\cite{turing36}. The first is a functional language and
+the second an imperative one.
+
+\begin{theorem}[The Church--Turing Ceasefire]\label{thm:ceasefire}
+  A function on the natural numbers is $\lambda$-definable if and only if
+  it is computable by a Turing machine.
+\end{theorem}
+
+\begin{proof}
+  Turing showed that every $\lambda$-definable function is computable and
+  every computable function is general recursive~\cite{turing37}, and
+  Kleene that every general recursive function is
+  $\lambda$-definable~\cite{kleene}.
+\end{proof}
+
+\begin{corollary}[No Exclusive Programs]\label{cor:exclusive}
+  Any function computed by a program in one Turing-complete language,
+  functional or imperative, is computed by some program in any other.
+\end{corollary}
+
+\begin{proof}
+  Each such language computes at least the functions that Turing machines
+  compute, since it is Turing-complete, and at most these, since a Turing
+  machine can run its interpreter. Theorem~\ref{thm:ceasefire} is the
+  case of the $\lambda$-calculus and Turing's machines.
+\end{proof}
+
+\begin{remark}
+  The ceasefire was signed in 1937, eleven years before the first
+  stored-program computer ran a program~\cite{baby}. It concerns which
+  functions can be computed, not how quickly, how clearly, or how often
+  incorrectly. The rest of this paper is about those.
+\end{remark}
+
 \newpage % start the references on a new page
 \begin{thebibliography}{99}
+  \bibitem{church} A.~Church, An unsolvable problem of elementary number
+  theory, \emph{American Journal of Mathematics} 58(2), 1936.
+  \bibitem{kleene} S.~C. Kleene, $\lambda$-definability and recursiveness,
+  \emph{Duke Mathematical Journal} 2(2), 1936.
   \bibitem{sondergaard} H.~S{\o}ndergaard and P.~Sestoft, Referential
   transparency, definiteness and unfoldability, \emph{Acta Informatica}
   27(6), 1990.
   \bibitem{strachey} C.~Strachey, Fundamental concepts in programming
   languages, \emph{Higher-Order and Symbolic Computation} 13(1--2), 2000.
   Lecture notes from 1967.
+  \bibitem{turing36} A.~M. Turing, On computable numbers, with an
+  application to the Entscheidungsproblem, \emph{Proceedings of the London
+  Mathematical Society} s2-42(1), 1936.
+  \bibitem{turing37} A.~M. Turing, Computability and $\lambda$-definability,
+  \emph{Journal of Symbolic Logic} 2(4), 1937.
+  \bibitem{baby} University of Manchester, How a 70-year-old Baby changed
+  the face of modern computing,
+  \url{https://www.manchester.ac.uk/about/news/how-a-70-year-old-baby-changed-the-face-of-modern-computing/},
+  21 June 2018.
 \end{thebibliography}
 
 \end{document}
