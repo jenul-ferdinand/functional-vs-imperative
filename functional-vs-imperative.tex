@@ -764,7 +764,8 @@ are translated into each other by optimising compilers
 Pippenger's model (Section~\ref{sec:cost}), which laziness refunds on
 the known example
 through a mutation no program can observe. Data races need shared
-mutable state, and each style removes one half of it
+mutable state, and functional programming
+removes the mutation while Rust removes the sharing
 (Section~\ref{sec:shared}). The evidence of Section~\ref{sec:evidence}
 finds the style's effect on defects small and fragile, its effect on
 readability mixed, and its effect on energy smaller than that of an
