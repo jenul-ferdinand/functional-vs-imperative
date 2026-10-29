@@ -338,10 +338,91 @@ purpose~\cite{swierstra}.
   remove makes a language more expressive, which may explain C++.
 \end{remark}
 
+\section{The Price of Purity}\label{sec:cost}
+
+A pure program cannot update memory in place. Where C overwrites one
+element of an array, a pure program builds a new array, or a new path
+through a tree that shares everything else with the old one. Pippenger
+asked what this costs, in a model of Lisp in which purity means giving
+up \code{rplaca} and \code{rplacd}, the operations that overwrite a cons
+cell~\cite{pippenger}. His programs are \emph{on-line}, producing each
+output before reading the next input, and \emph{symbolic}, comparing
+input symbols only for equality.
+
+\begin{proposition}[The Logarithm Bound]\label{prop:logbound}
+  An impure symbolic on-line program that performs $T$ operations can be
+  simulated by a pure one that performs $O(T\log T)$~\cite{pippenger}.
+\end{proposition}
+
+\begin{proof}
+  Keep the cells that the impure program overwrites in a balanced tree,
+  keyed by when they were created, and copy the path to a cell when it is
+  updated. With at most $T$ cells the tree has depth $O(\log T)$, so each
+  access costs $O(\log T)$, and each new version of the tree shares all
+  but one path with the old.
+\end{proof}
+
+\begin{theorem}[Pippenger]\label{thm:pippenger}
+  There is a symbolic on-line problem that an impure Lisp program solves
+  with $O(n)$ operations, while every pure Lisp program needs
+  $\Omega(n\log n)$ operations on some inputs~\cite{pippenger}.
+\end{theorem}
+
+The logarithm is therefore sometimes charged, in a model that evaluates
+everything as soon as it can. Lazy evaluation changes the answer.
+
+\begin{theorem}[Bird, Jones and de Moor]\label{thm:bird}
+  With lazy evaluation, a pure program solves Pippenger's problem in
+  linear time overall~\cite{bird}.
+\end{theorem}
+
+\begin{remark}[The Refund]
+  Laziness recovers the logarithm through the mechanism of
+  Section~\ref{sec:both}: an evaluated thunk is overwritten with its
+  value. Bird, Jones and de Moor call this ``essentially a restricted
+  memoization'', and the capsule review printed with their paper calls it
+  ``this restricted form of mutation''. They ``do not, and cannot, claim
+  that a lazy implementation can solve all problems with the same
+  efficiency as an impure Lisp solution''~\cite{bird}, and as far as we
+  know the question is still open. Purity costs at most a logarithm, and
+  on the problem that shows the logarithm is ever charged, laziness
+  refunds it.
+\end{remark}
+
+Many structures pay nothing (Table~\ref{tab:costs}).
+Hood and Melville gave a purely functional queue whose every operation
+takes constant time in the worst case~\cite{hood}. Okasaki's simpler one
+relies on laziness, and he concedes that ``some might argue that our
+implementation is not, in fact, purely functional because of the
+imperative nature of memoization''~\cite{okasaki95}. Persistence, the
+ability to read old versions after an update, comes free with purity,
+and costs an imperative linked structure of bounded in-degree $O(1)$
+amortised time and space per update~\cite{dsst}.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Operation & Imperative & Purely functional \\
+    \midrule
+    Read or write an array element & $O(1)$ & $O(\log n)$ \\
+    Add to or remove from a queue & $O(1)$ & $O(1)$~\cite{hood} \\
+    Sort $n$ items by comparison & $O(n\log n)$ & $O(n\log n)$ \\
+    Keep every old version & $O(1)$ more per update~\cite{dsst} & free \\
+    \bottomrule
+  \end{tabular}
+  \caption{Worst-case costs, except for persistence, which is
+    amortised. The purely functional array is a balanced tree, and the
+  persistent structure is linked, with bounded in-degree.}\label{tab:costs}
+\end{table}
+
 \newpage % start the references on a new page
 \begin{thebibliography}{99}
   \bibitem{appel} A.~W. Appel, SSA is functional programming, \emph{ACM
   SIGPLAN Notices} 33(4), 1998.
+  \bibitem{bird} R.~Bird, G.~Jones, and O.~de Moor, More haste, less speed:
+  Lazy versus eager evaluation, \emph{Journal of Functional Programming}
+  7(5), 1997.
   \bibitem{church} A.~Church, An unsolvable problem of elementary number
   theory, \emph{American Journal of Mathematics} 58(2), 1936.
   \bibitem{cytron} R.~Cytron, J.~Ferrante, B.~K. Rosen, M.~N. Wegman, and
@@ -356,6 +437,8 @@ purpose~\cite{swierstra}.
   \bibitem{gcc4} GCC Project, GCC 4.0 release series: Changes, new
   features, and fixes, \url{https://gcc.gnu.org/gcc-4.0/changes.html},
   accessed 29 October 2026.
+  \bibitem{hood} R.~Hood and R.~Melville, Real-time queue operations in
+  pure LISP, \emph{Information Processing Letters} 13(2), 1981.
   \bibitem{history} P.~Hudak, J.~Hughes, S.~Peyton Jones, and P.~Wadler, A
   history of Haskell: Being lazy with class, \emph{Proceedings of the Third
   ACM SIGPLAN Conference on History of Programming Languages}, 2007.
@@ -372,9 +455,13 @@ purpose~\cite{swierstra}.
   \bibitem{ghc} S.~Marlow and S.~Peyton Jones, The Glasgow Haskell
   Compiler, in A.~Brown and G.~Wilson (eds.), \emph{The Architecture of
   Open Source Applications}, Volume II, 2012.
+  \bibitem{okasaki95} C.~Okasaki, Simple and efficient purely functional
+  queues and deques, \emph{Journal of Functional Programming} 5(4), 1995.
   \bibitem{stg} S.~L. Peyton Jones, Implementing lazy functional languages
   on stock hardware: The Spineless Tagless G-machine, \emph{Journal of
   Functional Programming} 2(2), 1992.
+  \bibitem{pippenger} N.~Pippenger, Pure versus impure Lisp, \emph{ACM
+  Transactions on Programming Languages and Systems} 19(2), 1997.
   \bibitem{sondergaard} H.~S{\o}ndergaard and P.~Sestoft, Referential
   transparency, definiteness and unfoldability, \emph{Acta Informatica}
   27(6), 1990.
