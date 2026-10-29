@@ -64,7 +64,8 @@
   two styles compute exactly the same functions, as Turing and Kleene
   established by 1937, so no program can be written in one and not the
   other. (ii) Compilers translate between them routinely: the SSA form
-  inside Clang and GCC is a functional program, and GHC implements lazy
+  inside Clang and GCC can be read as a functional program, and GHC
+  implements lazy
   evaluation by overwriting memory. (iii) For Pippenger's symbolic
   on-line programs, purity costs at most a logarithmic factor in time,
   some problems pay exactly that factor when nothing is evaluated lazily,
@@ -220,7 +221,7 @@ total xs = go xs 0
   came from~\cite{cytron}. A program in SSA form can be read as a
   functional program:
   each block is a function, each $\phi$-function a parameter, and each
-  jump a tail call~\cite{kelsey,appel}.
+  jump a tail call~\cite{appel,kelsey}.
 \end{proposition}
 
 \noindent
@@ -342,8 +343,8 @@ witness is a familiar maintenance problem. Suppose a function deep
 inside a pure program must now count how often it is called, which is
 exactly the difference between calling it twice and calling it once. In
 C this is one global variable and one increment. In Haskell the
-function's type changes, from \code{a -> b} to
-\code{a -> State Int b}, and so does the type of every function that
+function's type changes, from \code{a~->~b} to
+\code{a~->~State~Int~b}, and so does the type of every function that
 calls it, directly or not. The imperative programmer pays the same price
 elsewhere. Keeping the previous version of a data structure, to undo an
 edit or to read it from another thread, is free in a pure program, where
@@ -480,11 +481,11 @@ The strongest argument for functional programming concerns concurrency.
   Definition~\ref{def:race}.
 \end{proof}
 
-Concurrency bugs in practice look like this. Of 105 sampled from MySQL,
-Apache, Mozilla and OpenOffice, 74 did not involve deadlock, and 72 of
-those were atomicity or order violations, in which accesses to memory
-shared between threads happened in an order the programmer had not
-intended~\cite{lu}.
+Concurrency bugs in practice look like this. Lu et al.\ sampled 105 from
+MySQL, Apache, Mozilla and OpenOffice. Of these, 74 did not involve
+deadlock, and 72 of those were atomicity or order violations, in which
+accesses to memory shared between threads happened in an order the
+programmer had not intended~\cite{lu}.
 
 A pure program writes nothing once a value is built, so it has no data
 races, and its parts can be evaluated in any order, or at once, without
@@ -665,7 +666,7 @@ languages acquired the means to mutate.
     2011 & C++11 & lambda expressions~\cite{cpp11} \\
     2014 & Java 8 & lambda expressions, streams~\cite{jdk8} \\
     2015 & Rust 1.0 & algebraic data types, immutability by
-    default~\cite{rust1,rustbook} \\
+    default~\cite{rustbook,rust1} \\
     2021 & Python 3.10 & structural pattern matching~\cite{pep634} \\
     2023 & Java 21 & pattern matching for \texttt{switch}~\cite{jdk21} \\
     \addlinespace
@@ -759,8 +760,9 @@ assignment. We leave the next removal to future work.
 Functional versus imperative reduces to a list of trades with known
 prices. The styles are equal in power (Theorem~\ref{thm:ceasefire}) and
 are translated into each other by optimising compilers
-(Section~\ref{sec:both}). Purity costs at most a logarithm
-(Section~\ref{sec:cost}), which laziness refunds on the known example
+(Section~\ref{sec:both}). Purity costs at most a logarithm in
+Pippenger's model (Section~\ref{sec:cost}), which laziness refunds on
+the known example
 through a mutation no program can observe. Data races need shared
 mutable state, and each style removes one half of it
 (Section~\ref{sec:shared}). The evidence of Section~\ref{sec:evidence}
