@@ -55,6 +55,34 @@
 \begin{document}
 \maketitle
 
+\begin{abstract}
+  Functional and imperative programming are usually argued about as
+  matters of taste. We instead treat the argument as a set of questions
+  with known answers, most of them proved by someone else first. (i) The
+  two styles compute exactly the same functions, as Turing and Kleene
+  established by 1937, so no program can be written in one and not the
+  other. (ii) Compilers translate between them routinely: the SSA form
+  inside Clang and GCC is a functional program, and GHC implements lazy
+  evaluation by overwriting memory. (iii) For Pippenger's symbolic
+  on-line programs, purity costs at most a logarithmic factor in time,
+  some problems pay exactly that factor when nothing is evaluated lazily,
+  and Bird, Jones and de Moor showed that laziness removes it from the
+  known example, through a write-once mutation that no program can
+  observe. (iv) A data race needs a location that is both shared and
+  mutable (\emph{Share or Mutate}). Functional programming forbids the
+  mutation and Rust forbids sharing what is being mutated, while linear
+  types and reference counting let pure languages update unshared values
+  in place, so the two styles have reached the same rule from opposite
+  ends. (v) Each style makes some changes local by making others global,
+  the Expression Problem among them. A review of the evidence finds the
+  effect of language on defects small and fragile, controlled
+  experiments on readability split, and energy use varying by a factor of
+  77 within the languages one study classes as functional. Meanwhile the
+  languages converged: imperative ones adopted lambdas, streams and
+  pattern matching, and Haskell is, in the words of one of its designers,
+  the world's finest imperative programming language.
+\end{abstract}
+
 \section{Two Ways to Sum a List}\label{sec:defs}
 
 Here is the same function written twice.
@@ -108,6 +136,15 @@ languages it is now conducted in. We settle it.
   languages in use permit both, so the question is not which language to
   use but which kind of program to write.
 \end{remark}
+
+The debate concerns four questions, which we take in turn: whether one
+style can compute more than the other (Section~\ref{sec:power}), say
+more (Section~\ref{sec:express}), run faster (Section~\ref{sec:cost}),
+or go wrong less often (Sections~\ref{sec:shared}
+and~\ref{sec:evidence}). Section~\ref{sec:both} shows that compilers
+already translate between the styles, Section~\ref{sec:convergence} that
+the languages have converged, and Section~\ref{sec:main} states the
+result.
 
 \section{The Ceasefire of 1937}\label{sec:power}
 
@@ -674,6 +711,69 @@ same analogy and the same conclusion: what made structured programs
 better was their modularity, not their lack of gotos~\cite{hughes}.
 Structured programming removed the jump, and functional programming the
 assignment. We leave the next removal to future work.
+
+\section{Main Result}\label{sec:main}
+
+\begin{theorem}[Functional Versus Imperative Is Solved]\label{thm:main}
+  For programs in Turing-complete languages:
+  \renewcommand{\labelenumi}{(\alph{enumi})}
+  \begin{enumerate}
+    \item the two styles compute exactly the same functions;
+    \item compilers translate between them in both directions, and a
+      program compiled through SSA form is, for a while, functional;
+    \item for symbolic on-line programs, purity costs at most a
+      logarithmic factor in time, some problems pay exactly that factor
+      when nothing is evaluated lazily, and laziness removes it from the
+      known example;
+    \item a data race needs a location that is both shared and mutable,
+      so pure programs, and imperative programs that forbid shared
+      mutation, have none;
+    \item for the changes of Table~\ref{tab:changes}, each style makes
+      local what the other makes global.
+  \end{enumerate}
+  No statement in (a)--(e) favours either style unconditionally.
+\end{theorem}
+
+\begin{proof}
+  Corollary~\ref{cor:exclusive}, Propositions~\ref{prop:goto},
+  \ref{prop:ssa}, \ref{prop:logbound} and~\ref{prop:share},
+  Theorems~\ref{thm:pippenger} and~\ref{thm:bird}, and
+  Table~\ref{tab:changes}.
+\end{proof}
+
+\begin{remark}[Interpretation]
+  Section~\ref{sec:evidence} adds what the theorems cannot: the measured
+  effect of the style on defects is small and fragile, experiments on
+  readability point both ways, and energy use varies by a factor of 77
+  within the languages one study classes as functional.
+  Section~\ref{sec:convergence} records that the languages stopped
+  waiting for the debate. The question was never which style to use, but
+  which guarantees a program needs, and what it will make inconvenient to
+  get them.
+\end{remark}
+
+\section{Conclusion}
+
+Functional versus imperative reduces to a list of trades with known
+prices. The styles are equal in power (Theorem~\ref{thm:ceasefire}) and
+are translated into each other by optimising compilers
+(Section~\ref{sec:both}). Purity costs at most a logarithm
+(Section~\ref{sec:cost}), which laziness refunds on the known example
+through a mutation no program can observe. Data races need shared
+mutable state, and each style removes one half of it
+(Section~\ref{sec:shared}). The evidence of Section~\ref{sec:evidence}
+finds the style's effect on defects small and fragile, its effect on
+readability mixed, and its effect on energy smaller than that of an
+interpreter. The languages, meanwhile, have converged
+(Section~\ref{sec:convergence}). Open problems include whether a lazy
+pure language is ever asymptotically slower than an impure one, and how
+either style reads in programs longer than the snippets used in
+experiments.
+
+\paragraph*{Acknowledgements.} The author thanks the Glasgow Haskell
+Compiler for its type errors, all of which were correct, and the C
+compiler for its silence, which was not. \emph{Conflict of interest:}
+the author writes both, often in the same function.
 
 \newpage % start the references on a new page
 \begin{thebibliography}{99}
