@@ -607,6 +607,74 @@ as an executable specification, and then reimplemented it by hand in
 C~\cite{sel4}. CompCert is a functional program that compiles imperative
 ones, and seL4 an imperative program designed in a functional language.
 
+\section{Convergence}\label{sec:convergence}
+
+While the debate continued, the languages settled it.
+Table~\ref{tab:convergence} lists when imperative languages acquired the
+features once used to define functional programming, and when functional
+languages acquired the means to mutate.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Year & Language & Acquired \\
+    \midrule
+    \multicolumn{3}{@{}l}{\emph{Imperative languages}} \\
+    1995 & JavaScript & first-class functions~\cite{js} \\
+    2007 & C\# 3.0 & lambda expressions, query expressions~\cite{csharp} \\
+    2011 & C++11 & lambda expressions~\cite{cpp11} \\
+    2014 & Java 8 & lambda expressions, streams~\cite{jdk8} \\
+    2015 & Rust 1.0 & algebraic data types, immutability by
+    default~\cite{rust1,rustbook} \\
+    2021 & Python 3.10 & structural pattern matching~\cite{pep634} \\
+    2023 & Java 21 & pattern matching for \texttt{switch}~\cite{jdk21} \\
+    \addlinespace
+    \multicolumn{3}{@{}l}{\emph{Functional languages}} \\
+    1990 & Standard ML & mutable reference cells~\cite{sml} \\
+    1994 & GHC & local mutable state, the \texttt{ST} monad~\cite{st} \\
+    1996 & Haskell 1.3 & monadic input and output~\cite{history} \\
+    2021 & GHC 9.0 & linear types~\cite{ghc9} \\
+    2021 & Koka & in-place update of unshared values~\cite{perceus} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Each side adopting the other's features.}\label{tab:convergence}
+\end{table}
+
+Haskell, which is purely functional, is in the words of one of its
+designers ``the world's finest imperative programming
+language''~\cite{awkward}. It performs input and output through
+monads~\cite{moggi,imperative}, and a monad, in Mac Lane's words, ``is
+just a monoid in the category of endofunctors''~\cite{maclane}. Readers who
+found this helpful may skip the rest of the paragraph. A monad lets a
+pure program describe a sequence of effects as a value, which the
+runtime then performs, so that the program stays pure and the computer
+still does something.
+
+Conversion runs in both directions. John Backus led the group that
+produced Fortran~\cite{fortran}, and in his 1977 Turing Award lecture
+asked whether programming could be liberated from the von Neumann
+style~\cite{backus}. Hughes noted that functional programming is usually
+advertised by what it lacks, such as assignment and side effects: ``The
+functional programmer sounds rather like a medieval monk, denying himself
+the pleasures of life in the hope that it will make him virtuous.'' Since
+``it is a logical impossibility to make a language more powerful by
+omitting features, no matter how bad they may be'', he located the
+advantage elsewhere, in two kinds of glue, higher-order functions and
+lazy evaluation, which make programs more modular~\cite{hughes}.
+Corollary~\ref{cor:exclusive} agrees about the omission, and
+Table~\ref{tab:convergence} shows the imperative languages agreeing
+about the glue, or at least the first kind.
+
+There is a precedent. Böhm and Jacopini showed that any flowchart can be
+rewritten without jumps, using a few structured forms and some extra
+variables~\cite{bohm}, so removing the jump costs no power, and Dijkstra
+argued that removing it adds clarity~\cite{dijkstra}. Hughes drew the
+same analogy and the same conclusion: what made structured programs
+better was their modularity, not their lack of gotos~\cite{hughes}.
+Structured programming removed the jump, and functional programming the
+assignment. We leave the next removal to future work.
+
 \newpage % start the references on a new page
 \begin{thebibliography}{99}
   \bibitem{amdahl} G.~M. Amdahl, Validity of the single processor approach
@@ -614,6 +682,12 @@ ones, and seL4 an imperative program designed in a functional language.
   AFIPS Spring Joint Computer Conference}, 1967.
   \bibitem{appel} A.~W. Appel, SSA is functional programming, \emph{ACM
   SIGPLAN Notices} 33(4), 1998.
+  \bibitem{backus} J.~Backus, Can programming be liberated from the von
+  Neumann style? A functional style and its algebra of programs,
+  \emph{Communications of the ACM} 21(8), 1978.
+  \bibitem{fortran} J.~W. Backus, R.~J. Beeber, S.~Best, et al., The
+  FORTRAN automatic coding system, \emph{Proceedings of the Western Joint
+  Computer Conference}, 1957.
   \bibitem{berger} E.~D. Berger, C.~Hollenbeck, P.~Maj, O.~Vitek, and
   J.~Vitek, On the impact of programming languages on code quality: A
   reproduction study, \emph{ACM Transactions on Programming Languages and
@@ -625,6 +699,11 @@ ones, and seL4 an imperative program designed in a functional language.
   \bibitem{bird} R.~Bird, G.~Jones, and O.~de Moor, More haste, less speed:
   Lazy versus eager evaluation, \emph{Journal of Functional Programming}
   7(5), 1997.
+  \bibitem{bohm} C.~B\"ohm and G.~Jacopini, Flow diagrams, Turing machines
+  and languages with only two formation rules, \emph{Communications of the
+  ACM} 9(5), 1966.
+  \bibitem{pep634} B.~Bucher and G.~van Rossum, PEP 634: Structural pattern
+  matching: Specification, \emph{Python Enhancement Proposals}, 2020.
   \bibitem{church} A.~Church, An unsolvable problem of elementary number
   theory, \emph{American Journal of Mathematics} 58(2), 1936.
   \bibitem{churchrosser} A.~Church and J.~B. Rosser, Some properties of
@@ -634,6 +713,8 @@ ones, and seL4 an imperative program designed in a functional language.
   F.~K. Zadeck, Efficiently computing static single assignment form and the
   control dependence graph, \emph{ACM Transactions on Programming Languages
   and Systems} 13(4), 1991.
+  \bibitem{dijkstra} E.~W. Dijkstra, Go to statement considered harmful,
+  \emph{Communications of the ACM} 11(3), 1968.
   \bibitem{dsst} J.~R. Driscoll, N.~Sarnak, D.~D. Sleator, and
   R.~E. Tarjan, Making data structures persistent, \emph{Journal of
   Computer and System Sciences} 38(1), 1989.
@@ -654,6 +735,10 @@ ones, and seL4 an imperative program designed in a functional language.
   \bibitem{history} P.~Hudak, J.~Hughes, S.~Peyton Jones, and P.~Wadler, A
   history of Haskell: Being lazy with class, \emph{Proceedings of the Third
   ACM SIGPLAN Conference on History of Programming Languages}, 2007.
+  \bibitem{hughes} J.~Hughes, Why functional programming matters, \emph{The
+  Computer Journal} 32(2), 1989.
+  \bibitem{cpp11} ISO/IEC, \emph{ISO/IEC 14882:2011, Programming
+  Languages: C++}, 2011.
   \bibitem{rustbelt} R.~Jung, J.-H. Jourdan, R.~Krebbers, and D.~Dreyer,
   RustBelt: Securing the foundations of the Rust programming language,
   \emph{Proceedings of the ACM on Programming Languages} 2(POPL), 2018.
@@ -671,6 +756,9 @@ ones, and seL4 an imperative program designed in a functional language.
   \bibitem{llvm} C.~Lattner and V.~Adve, LLVM: A compilation framework for
   lifelong program analysis \& transformation, \emph{Proceedings of the
   International Symposium on Code Generation and Optimization}, 2004.
+  \bibitem{st} J.~Launchbury and S.~L. Peyton Jones, Lazy functional state
+  threads, \emph{Proceedings of the ACM SIGPLAN Conference on Programming
+  Language Design and Implementation}, 1994.
   \bibitem{leroy} X.~Leroy, Formal verification of a realistic compiler,
   \emph{Communications of the ACM} 52(7), 2009.
   \bibitem{mem2reg} LLVM Project, LLVM's analysis and transform passes,
@@ -679,6 +767,8 @@ ones, and seL4 an imperative program designed in a functional language.
   A comprehensive study on real world concurrency bug characteristics,
   \emph{Proceedings of the International Conference on Architectural
   Support for Programming Languages and Operating Systems}, 2008.
+  \bibitem{maclane} S.~Mac Lane, \emph{Categories for the Working
+  Mathematician}, 2nd ed., Springer, 1998.
   \bibitem{ghc} S.~Marlow and S.~Peyton Jones, The Glasgow Haskell
   Compiler, in A.~Brown and G.~Wilson (eds.), \emph{The Architecture of
   Open Source Applications}, Volume II, 2012.
@@ -686,8 +776,19 @@ ones, and seL4 an imperative program designed in a functional language.
   declarative collection processing: An RCT on the understandability of
   traditional loops versus the stream API in Java, \emph{Proceedings of the
   International Conference on Software Engineering}, 2022.
+  \bibitem{csharp} Microsoft, The history of C\#,
+  \url{https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-version-history},
+  accessed 29 October 2026.
+  \bibitem{sml} R.~Milner, M.~Tofte, and R.~Harper, \emph{The Definition
+  of Standard ML}, MIT Press, 1990.
+  \bibitem{moggi} E.~Moggi, Notions of computation and monads,
+  \emph{Information and Computation} 93(1), 1991.
   \bibitem{okasaki95} C.~Okasaki, Simple and efficient purely functional
   queues and deques, \emph{Journal of Functional Programming} 5(4), 1995.
+  \bibitem{jdk8} OpenJDK, JDK 8, \url{https://openjdk.org/projects/jdk8/},
+  accessed 29 October 2026.
+  \bibitem{jdk21} OpenJDK, JEP 441: Pattern matching for switch,
+  \url{https://openjdk.org/jeps/441}, accessed 29 October 2026.
   \bibitem{pankratius} V.~Pankratius, F.~Schmidt, and G.~Garret\'on,
   Combining functional and imperative programming for multicore software:
   An empirical study evaluating Scala and Java, \emph{Proceedings of the
@@ -700,6 +801,13 @@ ones, and seL4 an imperative program designed in a functional language.
   \bibitem{stg} S.~L. Peyton Jones, Implementing lazy functional languages
   on stock hardware: The Spineless Tagless G-machine, \emph{Journal of
   Functional Programming} 2(2), 1992.
+  \bibitem{awkward} S.~L. Peyton Jones, Tackling the awkward squad: Monadic
+  input/output, concurrency, exceptions, and foreign-language calls in
+  Haskell, in C.~A.~R. Hoare, M.~Broy, and R.~Steinbr\"uggen (eds.),
+  \emph{Engineering Theories of Software Construction}, IOS Press, 2001.
+  \bibitem{imperative} S.~L. Peyton Jones and P.~Wadler, Imperative
+  functional programming, \emph{Proceedings of the ACM Symposium on
+  Principles of Programming Languages}, 1993.
   \bibitem{pippenger} N.~Pippenger, Pure versus impure Lisp, \emph{ACM
   Transactions on Programming Languages and Systems} 19(2), 1997.
   \bibitem{ray} B.~Ray, D.~Posnett, V.~Filkov, and P.~Devanbu, A large
@@ -710,6 +818,8 @@ ones, and seL4 an imperative program designed in a functional language.
   Perceus: Garbage free reference counting with reuse, \emph{Proceedings of
     the ACM SIGPLAN Conference on Programming Language Design and
   Implementation}, 2021.
+  \bibitem{rust1} Rust Core Team, Announcing Rust 1.0,
+  \url{https://blog.rust-lang.org/2015/05/15/Rust-1.0/}, 15 May 2015.
   \bibitem{sondergaard} H.~S{\o}ndergaard and P.~Sestoft, Referential
   transparency, definiteness and unfoldability, \emph{Acta Informatica}
   27(6), 1990.
@@ -742,6 +852,8 @@ ones, and seL4 an imperative program designed in a functional language.
   java-genericity mailing list, 12 November 1998.
   \bibitem{wadsworth} C.~P. Wadsworth, \emph{Semantics and Pragmatics of
   the Lambda-Calculus}, DPhil thesis, University of Oxford, 1971.
+  \bibitem{js} A.~Wirfs-Brock and B.~Eich, JavaScript: The first 20 years,
+  \emph{Proceedings of the ACM on Programming Languages} 4(HOPL), 2020.
   \bibitem{csmith} X.~Yang, Y.~Chen, E.~Eide, and J.~Regehr, Finding and
   understanding bugs in C compilers, \emph{Proceedings of the ACM SIGPLAN
   Conference on Programming Language Design and Implementation}, 2011.
