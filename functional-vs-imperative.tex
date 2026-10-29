@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{positioning}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage[colorlinks,allcolors=blue!50!black]{hyperref}
+\usepackage{needspace}
+% LaTeX's defaults; Debian's TeX Live 2023 leaves these at 0 ("u-nique")
+\lefthyphenmin=2 \righthyphenmin=3
+% stretch a tight paragraph instead of overflowing (two-digit citations)
+\emergencystretch=1em
+% start a section on a new page if less than a quarter page remains
+\let\oldsection\section
+\renewcommand{\section}{\Needspace{0.25\textheight}\oldsection}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  keepspaces=true,
+  keywordstyle=\color{blue!50!black},
+  commentstyle=\color{black!60}\itshape,
+  captionpos=t,
+  aboveskip=0.8em,
+  belowskip=0.4em,
+}
+
+\title{
+  \textbf{Functional Versus Imperative Is Solved}\\[0.2em]
+  \large Power, Cost, and Shared State in the Paradigm Debate
+}
+\author{}
+\date{29 October 2026}
+
+\begin{document}
+\maketitle
+
+\section{Two Ways to Sum a List}\label{sec:defs}
+
+Here is the same function written twice.
+
+\noindent
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{lstlisting}[language=C, caption={Imperative, in C.}, label=lst:c]
+int total(const int *xs, int n) {
+  int acc = 0;
+  for (int i = 0; i < n; i++)
+    acc += xs[i];
+  return acc;
+}
+  \end{lstlisting}
+\end{minipage}%
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{lstlisting}[language=Haskell, caption={Functional, in Haskell.}, label=lst:hs]
+total :: [Int] -> Int
+total []       = 0
+total (x : xs) = x + total xs
+  \end{lstlisting}
+\end{minipage}
+
+\medskip
+\noindent The first is a list of instructions. The second is a pair of
+equations. Programmers have argued about which is better for most of the
+history of programming, and the argument is older than most of the
+languages it is now conducted in. We settle it.
+
+\begin{definition}[Imperative]
+  A program is \emph{imperative} if its meaning is a sequence of
+  commands, each of which changes a \emph{store}, a map from locations to
+  values. Running it executes the commands in order, and its result is
+  read from the final store.
+\end{definition}
+
+\begin{definition}[Functional]
+  A program is \emph{functional} if its meaning is an expression, and the
+  meaning of an expression is its value. It is \emph{pure} if the value
+  of every expression depends only on the values of its subexpressions,
+  so that any subexpression can be replaced by its value without changing
+  the meaning of the whole. Strachey, borrowing from Quine, called this
+  property \emph{referential transparency}~\cite{strachey}.
+\end{definition}
+
+\begin{remark}
+  The term has since been used in several senses that are not
+  equivalent~\cite{sondergaard}. We use Strachey's. Both definitions
+  classify programs, not languages. C permits a function that assigns
+  nothing, and Haskell permits one that does nothing but assign. Most
+  languages in use permit both, so the question is not which language to
+  use but which kind of program to write.
+\end{remark}
+
+\newpage % start the references on a new page
+\begin{thebibliography}{99}
+  \bibitem{sondergaard} H.~S{\o}ndergaard and P.~Sestoft, Referential
+  transparency, definiteness and unfoldability, \emph{Acta Informatica}
+  27(6), 1990.
+  \bibitem{strachey} C.~Strachey, Fundamental concepts in programming
+  languages, \emph{Higher-Order and Symbolic Computation} 13(1--2), 2000.
+  Lecture notes from 1967.
+\end{thebibliography}
+
+\end{document}
