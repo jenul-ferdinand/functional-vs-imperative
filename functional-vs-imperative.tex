@@ -416,15 +416,103 @@ amortised time and space per update~\cite{dsst}.
   persistent structure is linked, with bounded in-degree.}\label{tab:costs}
 \end{table}
 
+\section{Share or Mutate}\label{sec:shared}
+
+The strongest argument for functional programming concerns concurrency.
+
+\begin{definition}[Data race]\label{def:race}
+  A \emph{data race} is a pair of accesses to the same memory location
+  by different threads, at least one of them a write, that are not
+  ordered by synchronisation.
+\end{definition}
+
+\begin{proposition}[Share or Mutate]\label{prop:share}
+  A data race needs a location that is both \emph{shared}, accessed by
+  two threads, and \emph{mutable}, written by at least one of them. A
+  program in which no location is both has no data races.
+\end{proposition}
+
+\begin{proof}
+  Definition~\ref{def:race}.
+\end{proof}
+
+Concurrency bugs in practice look like this. Of 105 sampled from MySQL,
+Apache, Mozilla and OpenOffice, 74 did not involve deadlock, and 72 of
+those were atomicity or order violations, in which accesses to memory
+shared between threads happened in an order the programmer had not
+intended~\cite{lu}.
+
+A pure program writes nothing once a value is built, so it has no data
+races, and its parts can be evaluated in any order, or at once, without
+changing its result. For the $\lambda$-calculus this is a theorem.
+
+\begin{theorem}[Church--Rosser]\label{thm:cr}
+  If a $\lambda$-term reduces to two terms, then both reduce to a common
+  term. In particular a term has at most one normal form, whatever order
+  its reductions are performed in~\cite{churchrosser}.
+\end{theorem}
+
+Permission to evaluate in parallel is not a speedup. If a fraction $f$ of
+a program's work can be spread over $p$ processors and the rest cannot,
+the speedup is at most
+\begin{equation}
+  S(p) = \frac{1}{(1-f) + f/p} < \frac{1}{1-f},
+\end{equation}
+a bound now called Amdahl's law after his argument in~\cite{amdahl}. A
+program that is 90\% parallel runs at most ten times faster, on any
+number of processors, in either style.
+
+Imperative languages can remove the sharing instead of the mutation. In
+Rust, ``at any given time, you can have either one mutable reference or
+any number of immutable references'', and because the compiler enforces
+this, ``Rust can prevent data races at compile time''~\cite{rustbook}.
+RustBelt proved the discipline sound for a formal model of the language,
+including libraries that use unsafe code inside: a well-typed program
+``will not have data races''~\cite{rustbelt}.
+
+Pure languages, from the other side, have learned to mutate what is not
+shared. Values of a linear type ``must be used exactly once'', and so
+``safely admit destructive array update''~\cite{wadler90}. GHC has
+supported linear types since version 9.0~\cite{linearhaskell,ghc9}.
+Perceus, the reference counting of the Koka language, checks at run time
+whether a reference is unique, ``to update in-place when
+possible''~\cite{perceus}.
+
+\begin{tcolorbox}[colback=white, colframe=black!50, boxrule=0.5pt]
+  \textbf{Remark (The Paradigm War, Stated Precisely).}
+  Proposition~\ref{prop:share} is the rigorous content of the debate. The
+  hazard was never mutation, and never sharing, but the two at once.
+  Functional programming forbids mutation, and pays for it in
+  Section~\ref{sec:cost}. Rust forbids sharing while mutating, and pays
+  in annotations and a borrow checker. Linear types let pure programs
+  mutate what is unshared, and ownership lets imperative programs share
+  what is immutable, so the two paradigms have reached the same rule from
+  opposite ends.
+
+  \begin{center}
+    \bfseries Share or mutate. Not both.
+  \end{center}
+\end{tcolorbox}
+
 \newpage % start the references on a new page
 \begin{thebibliography}{99}
+  \bibitem{amdahl} G.~M. Amdahl, Validity of the single processor approach
+  to achieving large scale computing capabilities, \emph{Proceedings of the
+  AFIPS Spring Joint Computer Conference}, 1967.
   \bibitem{appel} A.~W. Appel, SSA is functional programming, \emph{ACM
   SIGPLAN Notices} 33(4), 1998.
+  \bibitem{linearhaskell} J.-P. Bernardy, M.~Boespflug, R.~R. Newton,
+  S.~Peyton Jones, and A.~Spiwack, Linear Haskell: Practical linearity in a
+  higher-order polymorphic language, \emph{Proceedings of the ACM on
+  Programming Languages} 2(POPL), 2018.
   \bibitem{bird} R.~Bird, G.~Jones, and O.~de Moor, More haste, less speed:
   Lazy versus eager evaluation, \emph{Journal of Functional Programming}
   7(5), 1997.
   \bibitem{church} A.~Church, An unsolvable problem of elementary number
   theory, \emph{American Journal of Mathematics} 58(2), 1936.
+  \bibitem{churchrosser} A.~Church and J.~B. Rosser, Some properties of
+  conversion, \emph{Transactions of the American Mathematical Society}
+  39(3), 1936.
   \bibitem{cytron} R.~Cytron, J.~Ferrante, B.~K. Rosen, M.~N. Wegman, and
   F.~K. Zadeck, Efficiently computing static single assignment form and the
   control dependence graph, \emph{ACM Transactions on Programming Languages
@@ -437,14 +525,23 @@ amortised time and space per update~\cite{dsst}.
   \bibitem{gcc4} GCC Project, GCC 4.0 release series: Changes, new
   features, and fixes, \url{https://gcc.gnu.org/gcc-4.0/changes.html},
   accessed 29 October 2026.
+  \bibitem{ghc9} GHC Team, GHC 9.0.1 released,
+  \url{https://www.haskell.org/ghc/blog/20210204-ghc-9.0.1-released.html},
+  4 February 2021.
   \bibitem{hood} R.~Hood and R.~Melville, Real-time queue operations in
   pure LISP, \emph{Information Processing Letters} 13(2), 1981.
   \bibitem{history} P.~Hudak, J.~Hughes, S.~Peyton Jones, and P.~Wadler, A
   history of Haskell: Being lazy with class, \emph{Proceedings of the Third
   ACM SIGPLAN Conference on History of Programming Languages}, 2007.
+  \bibitem{rustbelt} R.~Jung, J.-H. Jourdan, R.~Krebbers, and D.~Dreyer,
+  RustBelt: Securing the foundations of the Rust programming language,
+  \emph{Proceedings of the ACM on Programming Languages} 2(POPL), 2018.
   \bibitem{kelsey} R.~A. Kelsey, A correspondence between continuation
   passing style and static single assignment form, \emph{ACM SIGPLAN
   Notices} 30(3), 1995.
+  \bibitem{rustbook} S.~Klabnik, C.~Nichols, and C.~Krycho, \emph{The Rust
+  Programming Language}, \url{https://doc.rust-lang.org/book/}, accessed
+  29 October 2026.
   \bibitem{kleene} S.~C. Kleene, $\lambda$-definability and recursiveness,
   \emph{Duke Mathematical Journal} 2(2), 1936.
   \bibitem{llvm} C.~Lattner and V.~Adve, LLVM: A compilation framework for
@@ -452,6 +549,10 @@ amortised time and space per update~\cite{dsst}.
   International Symposium on Code Generation and Optimization}, 2004.
   \bibitem{mem2reg} LLVM Project, LLVM's analysis and transform passes,
   \url{https://llvm.org/docs/Passes.html}, accessed 29 October 2026.
+  \bibitem{lu} S.~Lu, S.~Park, E.~Seo, and Y.~Zhou, Learning from mistakes:
+  A comprehensive study on real world concurrency bug characteristics,
+  \emph{Proceedings of the International Conference on Architectural
+  Support for Programming Languages and Operating Systems}, 2008.
   \bibitem{ghc} S.~Marlow and S.~Peyton Jones, The Glasgow Haskell
   Compiler, in A.~Brown and G.~Wilson (eds.), \emph{The Architecture of
   Open Source Applications}, Volume II, 2012.
@@ -462,6 +563,10 @@ amortised time and space per update~\cite{dsst}.
   Functional Programming} 2(2), 1992.
   \bibitem{pippenger} N.~Pippenger, Pure versus impure Lisp, \emph{ACM
   Transactions on Programming Languages and Systems} 19(2), 1997.
+  \bibitem{perceus} A.~Reinking, N.~Xie, L.~de Moura, and D.~Leijen,
+  Perceus: Garbage free reference counting with reuse, \emph{Proceedings of
+    the ACM SIGPLAN Conference on Programming Language Design and
+  Implementation}, 2021.
   \bibitem{sondergaard} H.~S{\o}ndergaard and P.~Sestoft, Referential
   transparency, definiteness and unfoldability, \emph{Acta Informatica}
   27(6), 1990.
@@ -483,6 +588,9 @@ amortised time and space per update~\cite{dsst}.
   the face of modern computing,
   \url{https://www.manchester.ac.uk/about/news/how-a-70-year-old-baby-changed-the-face-of-modern-computing/},
   21 June 2018.
+  \bibitem{wadler90} P.~Wadler, Linear types can change the world!, in
+  M.~Broy and C.~B. Jones (eds.), \emph{Programming Concepts and Methods},
+  North-Holland, 1990.
   \bibitem{expression} P.~Wadler, The Expression Problem, email to the
   java-genericity mailing list, 12 November 1998.
   \bibitem{wadsworth} C.~P. Wadsworth, \emph{Semantics and Pragmatics of
