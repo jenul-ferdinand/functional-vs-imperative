@@ -142,15 +142,166 @@ the second an imperative one.
   incorrectly. The rest of this paper is about those.
 \end{remark}
 
+\section{Every Program Is Both}\label{sec:both}
+
+The ceasefire is not only a theorem. Compilers carry it out, in both
+directions, on most programs that are ever run.
+
+\begin{proposition}[Lambda, the Ultimate Goto]\label{prop:goto}
+  A call in tail position, whose result the caller returns unchanged, can
+  be compiled as a jump that reuses the caller's stack frame. A
+  tail-recursive function therefore runs as a loop, in constant stack
+  space~\cite{steele77}.
+\end{proposition}
+
+A functional programmer who wants the loop of Listing~\ref{lst:c} writes
+Listing~\ref{lst:go}, which GHC compiles to a loop.
+
+\begin{lstlisting}[language=Haskell, caption={Listing~\ref{lst:c}, as a
+  functional programmer writes it.}, label=lst:go]
+total :: [Int] -> Int
+total xs = go xs 0
+  where
+    go []       acc = acc
+    go (y : ys) acc = go ys (acc + y)
+\end{lstlisting}
+
+\begin{proposition}[SSA Is Functional Programming]\label{prop:ssa}
+  In \emph{static single assignment} (SSA) form every variable is
+  assigned exactly once, and where control flow merges, a
+  $\phi$-function selects a value according to the block that control
+  came from~\cite{cytron}. A program in SSA form can be read as a
+  functional program:
+  each block is a function, each $\phi$-function a parameter, and each
+  jump a tail call~\cite{kelsey,appel}.
+\end{proposition}
+
+\noindent
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{lstlisting}[caption={Listing~\ref{lst:c} in SSA form.},
+    label=lst:ssa]
+entry:
+  br loop
+loop:
+  i   = phi [0, entry], [i1, body]
+  acc = phi [0, entry], [acc1, body]
+  br i < n, body, exit
+body:
+  acc1 = acc + xs[i]
+  i1   = i + 1
+  br loop
+exit:
+  ret acc
+  \end{lstlisting}
+\end{minipage}%
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{lstlisting}[caption={Listing~\ref{lst:ssa}, read as functions.},
+    label=lst:fun]
+entry()      = loop(0, 0)
+loop(i, acc) = if i < n then body(i, acc)
+               else exit(acc)
+body(i, acc) = loop(i + 1, acc + xs[i])
+exit(acc)    = acc
+  \end{lstlisting}
+\end{minipage}
+
+\medskip
+Clang compiles C to LLVM IR, which is in SSA form
+throughout~\cite{llvm}, and the \texttt{mem2reg} pass promotes local
+variables whose addresses are never taken out of memory and into SSA
+form~\cite{mem2reg}. GCC has optimised in SSA form since version 4.0, in
+2005~\cite{gcc4}. Arrays and other memory remain loads and stores, so
+Appel's reading covers the scalar variables~\cite{appel}, but the loop of
+Listing~\ref{lst:c} spends most of its time in the compiler as the
+functions of Listing~\ref{lst:fun}. C programmers have been writing
+functional programs for decades. The compiler was too polite to mention
+it.
+
+The traffic runs the other way too. GHC translates Haskell through two
+functional intermediate languages, Core and STG, into Cmm, ``a low-level
+imperative language with an explicit stack'', and from there into
+machine code, directly or through LLVM~\cite{ghc}. Lazy evaluation, which
+in the words of Haskell's designers ``kept us pure''~\cite{history}, is
+itself implemented by mutation. An argument is passed unevaluated, as a
+\emph{thunk}, and the first time its value is needed the thunk is
+overwritten in place with that value, so that it is computed at most
+once. Wadsworth proposed this in 1971~\cite{wadsworth}, and GHC's STG
+machine works this way~\cite{stg}.
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}[
+      font=\small, >=stealth,
+      stage/.style={draw, rounded corners=2pt, minimum height=1.7em,
+      minimum width=4.4em, inner xsep=0.4em},
+      fun/.style={stage, fill=blue!12},
+      imp/.style={stage},
+    ]
+    \node[fun] (hs) {Haskell};
+    \node[fun, right=0.5cm of hs] (core) {Core};
+    \node[fun, right=0.5cm of core] (stg) {STG};
+    \node[imp, right=0.5cm of stg] (cmm) {Cmm};
+    \node[fun, right=0.5cm of cmm] (hir) {LLVM IR};
+    \node[imp, right=0.5cm of hir] (hmc) {machine code};
+    \node[imp, above=0.55cm of cmm] (c) {C};
+    \node[fun, above=0.55cm of hir] (cir) {LLVM IR};
+    \node[imp, above=0.55cm of hmc] (cmc) {machine code};
+    \foreach \a/\b in {hs/core, core/stg, stg/cmm, cmm/hir, hir/hmc,
+    c/cir, cir/cmc}
+    \draw[->] (\a) -- (\b);
+    \node[anchor=east] at ([xshift=-0.3cm]hs.west) {GHC};
+    \node[anchor=east] at ([xshift=-0.3cm]hs.west |- c) {Clang};
+  \end{tikzpicture}
+  \caption{The stages of two compilers, with functional stages shaded:
+    Clang, and GHC with its LLVM backend. Reading SSA form as functional
+    (Proposition~\ref{prop:ssa}), the C program changes paradigm twice and
+  the Haskell program three times.}\label{fig:pipeline}
+\end{figure}
+
+\begin{remark}
+  The paradigm of a program is therefore a property of the stage at which
+  a person reads it. Most of the debate concerns the first stage.
+\end{remark}
+
 \newpage % start the references on a new page
 \begin{thebibliography}{99}
+  \bibitem{appel} A.~W. Appel, SSA is functional programming, \emph{ACM
+  SIGPLAN Notices} 33(4), 1998.
   \bibitem{church} A.~Church, An unsolvable problem of elementary number
   theory, \emph{American Journal of Mathematics} 58(2), 1936.
+  \bibitem{cytron} R.~Cytron, J.~Ferrante, B.~K. Rosen, M.~N. Wegman, and
+  F.~K. Zadeck, Efficiently computing static single assignment form and the
+  control dependence graph, \emph{ACM Transactions on Programming Languages
+  and Systems} 13(4), 1991.
+  \bibitem{gcc4} GCC Project, GCC 4.0 release series: Changes, new
+  features, and fixes, \url{https://gcc.gnu.org/gcc-4.0/changes.html},
+  accessed 29 October 2026.
+  \bibitem{history} P.~Hudak, J.~Hughes, S.~Peyton Jones, and P.~Wadler, A
+  history of Haskell: Being lazy with class, \emph{Proceedings of the Third
+  ACM SIGPLAN Conference on History of Programming Languages}, 2007.
+  \bibitem{kelsey} R.~A. Kelsey, A correspondence between continuation
+  passing style and static single assignment form, \emph{ACM SIGPLAN
+  Notices} 30(3), 1995.
   \bibitem{kleene} S.~C. Kleene, $\lambda$-definability and recursiveness,
   \emph{Duke Mathematical Journal} 2(2), 1936.
+  \bibitem{llvm} C.~Lattner and V.~Adve, LLVM: A compilation framework for
+  lifelong program analysis \& transformation, \emph{Proceedings of the
+  International Symposium on Code Generation and Optimization}, 2004.
+  \bibitem{mem2reg} LLVM Project, LLVM's analysis and transform passes,
+  \url{https://llvm.org/docs/Passes.html}, accessed 29 October 2026.
+  \bibitem{ghc} S.~Marlow and S.~Peyton Jones, The Glasgow Haskell
+  Compiler, in A.~Brown and G.~Wilson (eds.), \emph{The Architecture of
+  Open Source Applications}, Volume II, 2012.
+  \bibitem{stg} S.~L. Peyton Jones, Implementing lazy functional languages
+  on stock hardware: The Spineless Tagless G-machine, \emph{Journal of
+  Functional Programming} 2(2), 1992.
   \bibitem{sondergaard} H.~S{\o}ndergaard and P.~Sestoft, Referential
   transparency, definiteness and unfoldability, \emph{Acta Informatica}
   27(6), 1990.
+  \bibitem{steele77} G.~L. Steele Jr., Debunking the `expensive procedure
+  call' myth or, procedure call implementations considered harmful or,
+  LAMBDA: The ultimate GOTO, \emph{Proceedings of the 1977 Annual
+  Conference of the ACM}, 1977.
   \bibitem{strachey} C.~Strachey, Fundamental concepts in programming
   languages, \emph{Higher-Order and Symbolic Computation} 13(1--2), 2000.
   Lecture notes from 1967.
@@ -163,6 +314,8 @@ the second an imperative one.
   the face of modern computing,
   \url{https://www.manchester.ac.uk/about/news/how-a-70-year-old-baby-changed-the-face-of-modern-computing/},
   21 June 2018.
+  \bibitem{wadsworth} C.~P. Wadsworth, \emph{Semantics and Pragmatics of
+  the Lambda-Calculus}, DPhil thesis, University of Oxford, 1971.
 \end{thebibliography}
 
 \end{document}
